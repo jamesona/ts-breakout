@@ -28,6 +28,11 @@ export class App {
     private tick(): void {
         window.requestAnimationFrame(() => this.tick())
         updateDimensions(this.canvas)
+        this.context.clearRect(
+            0, 0,
+            this.context.canvas.clientWidth,
+            this.context.canvas.clientHeight
+        )
         this.client.render()
     }
 }

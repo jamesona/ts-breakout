@@ -57,28 +57,34 @@ export class Rectangle extends Mobile {
     public fillStyle: string
     public width: number
     public height: number
+    public mode: drawType = 'fill'
 
     constructor(
         private readonly ctx: ctx,
+        dimensions: cartesianPair = {
+            x: 100, y: 100
+        },
         position?: cartesianPair,
-        vector?: cartesianPair
+        velocity?: cartesianPair
     ) {
-        super(position, vector)
+        super(position, velocity)
+        this.width = dimensions.x
+        this.height = dimensions.y
     }
 
-    public get coords(): Dimensions {
-        const from = {...this.position}
-        const to = {...this.position}
-        to.x += this.width
-        to.y += this.height
-
-        return new Dimensions(from, to)
+    public draw(style?: string) {
+        this[this.mode](style)
     }
-
+    
     public stroke(style?: string) {
         if (style) this.strokeStyle = style
         this.ctx.beginPath()
-        this.ctx.rect.apply(this.ctx, this.coords)
+        this.ctx.rect(
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height
+        )
         strokeOrFill(this.ctx, this.strokeStyle, 'stroke')
         this.ctx.closePath()
     }
@@ -86,7 +92,12 @@ export class Rectangle extends Mobile {
     public fill(style?: string) {
         if (style) this.fillStyle = style
         this.ctx.beginPath()
-        this.ctx.rect.apply(this.ctx, this.coords)
+        this.ctx.rect(
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height
+        )
         strokeOrFill(this.ctx, this.fillStyle, 'fill')
         this.ctx.closePath()
     }
@@ -95,14 +106,19 @@ export class Rectangle extends Mobile {
 export class Circle extends Mobile {
     public strokeStyle: string
     public fillStyle: string
+    public mode: drawType = 'fill'
 
     constructor(
         private readonly ctx: ctx,
-        public diameter: number = 0,
+        public radius: number = 0,
         position?: cartesianPair,
-        vector?: cartesianPair
+        velocity?: cartesianPair
     ) {
-        super(position, vector)
+        super(position, velocity)
+    }
+
+    public draw(style?: string) {
+        this[this.mode](style)
     }
 
     public stroke(style?: string) {
@@ -111,7 +127,7 @@ export class Circle extends Mobile {
         this.ctx.arc(
             this.position.x,
             this.position.y,
-            this.diameter,
+            this.radius,
             0,
             Math.PI*2,
             false
@@ -126,7 +142,7 @@ export class Circle extends Mobile {
         this.ctx.arc(
             this.position.x,
             this.position.y,
-            this.diameter,
+            this.radius,
             0,
             Math.PI*2,
             false
