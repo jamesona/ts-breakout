@@ -6,9 +6,10 @@ const CONFIG = {
     ballRadius: 10,
     ballSpeed: 5,
     ballColor: '#0095dd',
-    paddleHeight: 20,
+    paddleHeight: 10,
     paddleWidth: 100,
     paddleFloat: 10,
+    paddleSpeed: 7,
     paddleColor: '#0095dd'
 }
 
@@ -19,6 +20,7 @@ export class Game implements Renderable {
     private paddle: fromShapes.Rectangle
     private leftPressed: boolean = false
     private rightPressed: boolean = false
+    private started: boolean = false
     private paused: boolean = true
 
     public init(ctx: CanvasRenderingContext2D) {
@@ -48,10 +50,10 @@ export class Game implements Renderable {
         this.paddle.updateScaling(resolution)
         this.ball.updateScaling(resolution)
 
-        if (this.paused) {
-            
-        } else {
+        if (!this.paused || !this.started) {
             this.detectPaddleMovement()
+        }
+        if (!this.paused) {
             this.ball.move()
             this.detectWallCollision()
         }
@@ -61,6 +63,7 @@ export class Game implements Renderable {
     }
 
     public resume() {
+        this.started = true
         this.paused = false
         this.ball.velocity = this.previousVelocity
     }
@@ -69,6 +72,11 @@ export class Game implements Renderable {
         this.paused = true
         this.previousVelocity = this.ball.velocity
         this.ball.velocity = {x: 0, y: 0}
+    }
+
+    public end() {
+        this.paused = true
+        alert('Game Over!')
     }
 
     private onKeyDown(event: KeyboardEvent) {
@@ -94,11 +102,34 @@ export class Game implements Renderable {
     }
 
     private detectPaddleMovement() {
+        const width = this.ctx.canvas.clientWidth
+        let ballOffset = 0
+
         if (this.rightPressed) {
-            this.paddle.position.x += 7
+            this.paddle.position.x += CONFIG.paddleSpeed
+
+            const rightEdge = this.paddle.position.x + this.paddle.width
+            ballOffset = CONFIG.paddleSpeed
+            
+            if (rightEdge > width) {
+                this.paddle.position.x = width - this.paddle.width
+                ballOffset -= rightEdge - width
+            }            
         }
         if (this.leftPressed) {
-            this.paddle.position.x -= 7
+            this.paddle.position.x -= CONFIG.paddleSpeed
+
+            const leftEdge = this.paddle.position.x + 0
+            ballOffset = -CONFIG.paddleSpeed
+
+            if(leftEdge < 0) {
+                this.paddle.position.x = 0
+                ballOffset += 0 - leftEdge
+            }
+        }
+
+        if (!this.started) {
+            this.ball.position.x += ballOffset
         }
     }
 
@@ -106,15 +137,40 @@ export class Game implements Renderable {
         const { position, velocity } = this.ball
         const height = this.ctx.canvas.clientHeight - this.ball.radius
         const width = this.ctx.canvas.clientWidth - this.ball.radius
+        const paddleEdge = height - CONFIG.paddleFloat - CONFIG.paddleHeight
+        const paddleLeftEdge = this.paddle.position.x
+        const paddleRightEdge = this.paddle.position.x + this.paddle.width
+        const ballRightEdge = position.x + this.ball.radius
+        const ballLeftEdge = position.x - this.ball.radius
 
         if (position.x + velocity.x < this.ball.radius ||
             position.x + velocity.x > width) {
             velocity.x = -velocity.x
         }
         
-        if (position.y + velocity.y < this.ball.radius ||
-            position.y + velocity.y > height) {
+        else if (position.y + velocity.y < this.ball.radius) {
             velocity.y = -velocity.y
+        }
+
+        else if (position.y + velocity.y > paddleEdge) {
+            if (
+                ballRightEdge > paddleLeftEdge &&
+                ballLeftEdge < paddleRightEdge
+            ) {
+                velocity.y = -velocity.y
+                const diff = this.paddle.position.x - position.x
+                const percent = diff / this.paddle.width
+                const factor = Math.abs(Math.round(percent) - percent)
+                if (Math.round(percent)) {
+                    velocity.x = (1 - factor) * CONFIG.ballSpeed
+                } else [
+                    velocity.x = -(1 - factor) * CONFIG.ballSpeed
+                ]
+            }
+
+            else if (position.y + velocity.y > height) {
+                this.end()
+            }
         }
     }
 
@@ -131,8 +187,8 @@ export class Game implements Renderable {
             )
         }
         this.previousVelocity = {
-            x: Math.random() * (Math.round(Math.random()) ? 2 : -2),
-            y: Math.random() * -2
+            x: 0,
+            y: -CONFIG.ballSpeed
         }
         this.ball = new fromShapes.Circle(
             this.ctx, CONFIG.ballRadius,
