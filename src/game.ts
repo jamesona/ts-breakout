@@ -10,14 +10,34 @@ const CONFIG = {
     paddleWidth: 100,
     paddleFloat: 10,
     paddleSpeed: 7,
-    paddleColor: '#0095dd'
+    paddleColor: '#0095dd',
+    brickRows: 6,
+    brickColumns: 12,
+    brickWidth: 'auto',
+    brickHeight: 'auto',
+    brickPadding: 10,
+    brickHits: 1,
+    brickColors: [
+        '#0095dd',
+        '#00db6e',
+        '#49db00',
+        '#dbb700',
+        '#db0000',
+        '#db00b7',
+    ]
+}
+
+interface BrickData {
+    hits: number
+    rect: fromShapes.Rectangle
 }
 
 export class Game implements Renderable {
     private ctx: CanvasRenderingContext2D
     private ball: fromShapes.Circle
-    private previousVelocity: cartesianPair
     private paddle: fromShapes.Rectangle
+    private bricks: BrickData[][]
+    private previousVelocity: cartesianPair
     private leftPressed: boolean = false
     private rightPressed: boolean = false
     private started: boolean = false
@@ -28,6 +48,7 @@ export class Game implements Renderable {
 
         this.initPaddle()
         this.initBall()
+        this.initBricks()
 
         document.addEventListener(
             'keydown',
@@ -56,10 +77,12 @@ export class Game implements Renderable {
         if (!this.paused) {
             this.ball.move()
             this.detectWallCollision()
+            this.detectBrickCollision()
         }
         
         this.paddle.draw()
         this.ball.draw()
+        this.drawBricks()
     }
 
     public resume() {
@@ -174,6 +197,28 @@ export class Game implements Renderable {
         }
     }
 
+    private detectBrickCollision() {
+        this.bricks.forEach((row, r) => {
+            row.forEach((column, c) => {
+                const brick = this.bricks[r][c]
+                const b = brick.rect.position
+                const {width, height} = brick.rect
+                const {x, y} = this.ball.position
+
+                if (
+                    x > b.x &&
+                    x < b.x + width &&
+                    y > b.y &&
+                    y < b.y + height
+                ) {
+                    this.ball.velocity.x = -this.ball.velocity.x
+                    this.ball.velocity.y = -this.ball.velocity.y
+                    brick.hits -= 1
+                }
+            })
+        })
+    }
+
     private initBall() {
         const canvasWidth = this.ctx.canvas.clientWidth
         const canvasHeight = this.ctx.canvas.clientHeight
@@ -220,5 +265,59 @@ export class Game implements Renderable {
         )
 
         this.paddle.fillStyle = CONFIG.paddleColor
+    }
+
+    private initBricks() {
+        this.bricks = Array(CONFIG.brickRows).fill(null).map(
+            () => Array(CONFIG.brickColumns).fill(null).map(
+                () => ({
+                    hits: CONFIG.brickHits,
+                    rect: new fromShapes.Rectangle(this.ctx)
+                })
+            )
+        )
+    }
+
+    private drawBricks() {
+        const padding = CONFIG.brickPadding
+        const rows = CONFIG.brickRows
+        const columns = CONFIG.brickColumns
+        const colors = CONFIG.brickColors
+
+        const clientWidth = this.ctx.canvas.clientWidth
+        const clientHeight = this.ctx.canvas.clientHeight
+
+        const areaWidth = clientWidth - (padding * 2)
+        const areaHeight = clientHeight / 2 - padding
+
+        const totalHorzPadding = (columns - 1) * padding
+        const totalVertPadding = (rows - 1) * padding
+
+        const brickWidth = (areaWidth - totalHorzPadding) / columns
+        const brickHeight = (areaHeight - totalVertPadding) / rows
+
+        const unitWidth = brickWidth + padding
+        const unitHeight = brickHeight + padding
+
+        this.bricks.forEach((row, r) => {
+            row.forEach((column, c) => {
+                const brick = this.bricks[r][c]
+                if (brick.hits === 0) {
+                    brick.rect.position = {
+                        x: -1,
+                        y: -1
+                    }
+                    brick.rect.width = brick.rect.height = 0
+                    return
+                }
+                brick.rect.width = brickWidth
+                brick.rect.height = brickHeight
+                brick.rect.position = {
+                    x: unitWidth * c + padding,
+                    y: unitHeight * r + padding
+                }
+                brick.rect.draw(colors[brick.hits - 1])
+            })
+        })
     }
 }
