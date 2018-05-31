@@ -1,6 +1,6 @@
 import { Renderable } from './app'
 import * as fromShapes from './shapes'
-import { cartesianPair } from './mobile';
+import { Point } from './mobile';
 
 const CONFIG = {
     ballRadius: 10,
@@ -37,7 +37,7 @@ export class Game implements Renderable {
     private ball: fromShapes.Circle
     private paddle: fromShapes.Rectangle
     private bricks: BrickData[][]
-    private previousVelocity: cartesianPair
+    private previousVelocity: Point
     private leftPressed: boolean = false
     private rightPressed: boolean = false
     private started: boolean = false
