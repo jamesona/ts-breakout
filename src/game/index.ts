@@ -1,5 +1,5 @@
 import { Renderable } from '../app'
-import { Point } from '../lib/geometry'
+import { Point, intersectSegments, isPointOnLine, pointAtDegree, circleIntersectsRectangle } from '../lib/geometry'
 import { Ball } from './ball'
 import { Rectangle } from './rectangle'
 
@@ -202,20 +202,20 @@ export class Game implements Renderable {
 		this.bricks.forEach((row, r) => {
 			row.forEach((column, c) => {
 				const brick = this.bricks[r][c]
-				const b = brick.rect.position
-				const { width, height } = brick.rect
-				const { x, y } = this.ball.position
+				const circle = {
+					...this.ball.position,
+					r: this.ball.radius
+				}
+				const rect = {
+					...brick.rect.position,
+					w: brick.rect.width,
+					h: brick.rect.height
+				}
 
-				if (
-					x > b.x &&
-					x < b.x + width &&
-					y > b.y &&
-					y < b.y + height
-				) {
-					this.ball.velocity.x = -this.ball.velocity.x
-					this.ball.velocity.y = -this.ball.velocity.y
+				if (circleIntersectsRectangle(circle, rect)) {
 					brick.hits -= 1
 				}
+
 			})
 		})
 	}

@@ -1,5 +1,5 @@
 import { Mobile } from '../lib/mobile'
-import { Point } from '../lib/geometry'
+import { Point, Vertex, pointAtDegree, pointAtRadian, vectorToRadians, Vector } from '../lib/geometry'
 import { drawType, ctx, strokeOrFill } from '../lib/draw'
 
 export class Ball extends Mobile {
@@ -18,6 +18,26 @@ export class Ball extends Mobile {
 
 	public get center(): Point {
 		return this.position
+	}
+
+	public get rays(): Vertex[] {
+		return Array(360).fill(null).map((v, i) => i)
+			.map(degrees => new Vertex(
+				this.center,
+				pointAtDegree(this.center, this.radius, degrees)
+			))
+	}
+
+	public get leadingPoint() {
+		return pointAtRadian(
+			this.center,
+			this.radius,
+			vectorToRadians(this.velocity)
+		)
+	}
+
+	public get centerToLeadingPoint(): Vertex {
+		return new Vertex(this.center, this.leadingPoint)
 	}
 
 	public draw(style?: string) {

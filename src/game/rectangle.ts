@@ -1,5 +1,5 @@
 import { Mobile } from '../lib/mobile'
-import { Point } from '../lib/geometry'
+import { Point, Vertex } from '../lib/geometry'
 import { drawType, ctx, strokeOrFill } from '../lib/draw'
 
 export class Rectangle extends Mobile {
@@ -25,6 +25,13 @@ export class Rectangle extends Mobile {
 		this.height = dimensions.y
 	}
 
+	public get center(): Point {
+		return {
+			x: this.position.x + this.width / 2,
+			y: this.position.y + this.height / 2
+		}
+	}
+
 	public get points(): Point[] {
 		const a: Point = { x: this.position.x, y: this.position.y }
 		const b: Point = { x: this.position.x + this.width, y: this.position.y }
@@ -39,13 +46,13 @@ export class Rectangle extends Mobile {
 		return [a, b, c, d]
 	}
 
-	public get vertices(): Point[][] {
+	public get vertices(): Vertex[] {
 		const points = this.points
 		return [
-			[points[0], points[1]],
-			[points[1], points[2]],
-			[points[2], points[3]],
-			[points[3], points[0]]
+			new Vertex(points[0], points[1]),
+			new Vertex(points[1], points[2]),
+			new Vertex(points[2], points[3]),
+			new Vertex(points[3], points[0])
 		]
 	}
 

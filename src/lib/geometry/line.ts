@@ -30,7 +30,7 @@ export class Line {
 	constructor(public slope: number, public origin: Point) {}
 }
 
-function calculateSlope(a: Point, b: Point) {
+export function calculateSlope(a: Point, b: Point) {
 	return (b.y - a.y) / (b.x - a.x)
 }
 
