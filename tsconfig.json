@@ -1,17 +1,18 @@
 {
-    "compilerOptions": {
-        "rootDir": "./src",
-        "outDir": "./build-tsc",
-        "module": "commonjs",
-        "target": "es2017",
-        "noImplicitAny": true,
-        "noImplicitReturns": true,
-    },
-    "compileOnSave": true,
-    "include": [
-        "src/*"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+	"compilerOptions": {
+		"rootDir": "src",
+		"baseUrl": "src",
+		"outDir": "./build-tsc",
+		"module": "commonjs",
+		"target": "es2017",
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+	},
+	"compileOnSave": true,
+	"include": [
+		"src/*"
+	],
+	"exclude": [
+		"node_modules"
+	]
 }
