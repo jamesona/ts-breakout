@@ -1,5 +1,7 @@
-import { Renderable } from './app'
-import { Circle, Point, Rectangle } from './lib/geometry'
+import { Renderable } from '../app'
+import { Point } from '../lib/geometry'
+import { Ball } from './ball'
+import { Rectangle } from './rectangle'
 
 const CONFIG = {
 	ballRadius: 10,
@@ -33,7 +35,7 @@ interface BrickData {
 
 export class Game implements Renderable {
 	private ctx: CanvasRenderingContext2D
-	private ball: Circle
+	private ball: Ball
 	private paddle: Rectangle
 	private bricks: BrickData[][]
 	private previousVelocity: Point
@@ -66,7 +68,7 @@ export class Game implements Renderable {
 			x: this.ctx.canvas.clientWidth,
 			y: this.ctx.canvas.clientHeight
 		}
-		
+
 		this.paddle.updateScaling(resolution)
 		this.ball.updateScaling(resolution)
 
@@ -78,7 +80,7 @@ export class Game implements Renderable {
 			this.detectWallCollision()
 			this.detectBrickCollision()
 		}
-		
+
 		this.paddle.draw()
 		this.ball.draw()
 		this.drawBricks()
@@ -93,7 +95,7 @@ export class Game implements Renderable {
 	public pause() {
 		this.paused = true
 		this.previousVelocity = this.ball.velocity
-		this.ball.velocity = {x: 0, y: 0}
+		this.ball.velocity = { x: 0, y: 0 }
 	}
 
 	public end() {
@@ -106,19 +108,19 @@ export class Game implements Renderable {
 			if (this.paused) this.resume()
 			else this.pause()
 		}
-		else if(event.keyCode == 39) {
+		else if (event.keyCode == 39) {
 			this.rightPressed = true
 		}
-		else if(event.keyCode == 37) {
+		else if (event.keyCode == 37) {
 			this.leftPressed = true
 		}
 	}
 
 	private onKeyUp(event: KeyboardEvent) {
-		if(event.keyCode == 39) {
+		if (event.keyCode == 39) {
 			this.rightPressed = false
 		}
-		else if(event.keyCode == 37) {
+		else if (event.keyCode == 37) {
 			this.leftPressed = false
 		}
 	}
@@ -132,7 +134,7 @@ export class Game implements Renderable {
 
 			const rightEdge = this.paddle.position.x + this.paddle.width
 			ballOffset = CONFIG.paddleSpeed
-			
+
 			if (rightEdge > width) {
 				this.paddle.position.x = width - this.paddle.width
 				ballOffset -= rightEdge - width
@@ -144,7 +146,7 @@ export class Game implements Renderable {
 			const leftEdge = this.paddle.position.x + 0
 			ballOffset = -CONFIG.paddleSpeed
 
-			if(leftEdge < 0) {
+			if (leftEdge < 0) {
 				this.paddle.position.x = 0
 				ballOffset += 0 - leftEdge
 			}
@@ -169,7 +171,7 @@ export class Game implements Renderable {
 			position.x + velocity.x > width) {
 			velocity.x = -velocity.x
 		}
-		
+
 		else if (position.y + velocity.y < this.ball.radius) {
 			velocity.y = -velocity.y
 		}
@@ -185,7 +187,7 @@ export class Game implements Renderable {
 				const factor = Math.abs(Math.round(percent) - percent)
 				if (Math.round(percent)) {
 					velocity.x = (1 - factor) * CONFIG.ballSpeed
-				} else [
+				} else[
 					velocity.x = -(1 - factor) * CONFIG.ballSpeed
 				]
 			}
@@ -201,8 +203,8 @@ export class Game implements Renderable {
 			row.forEach((column, c) => {
 				const brick = this.bricks[r][c]
 				const b = brick.rect.position
-				const {width, height} = brick.rect
-				const {x, y} = this.ball.position
+				const { width, height } = brick.rect
+				const { x, y } = this.ball.position
 
 				if (
 					x > b.x &&
@@ -234,7 +236,7 @@ export class Game implements Renderable {
 			x: 0,
 			y: -CONFIG.ballSpeed
 		}
-		this.ball = new Circle(
+		this.ball = new Ball(
 			this.ctx, CONFIG.ballRadius,
 			startingCoords, this.previousVelocity
 		)
